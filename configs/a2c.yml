@@ -4,7 +4,7 @@ atari:
   frame_stack: 4
   policy: 'CnnPolicy'
   n_envs: 16
-  n_timesteps: !!float 1e7
+  n_timesteps: !!float 1e5
   ent_coef: 0.01
   vf_coef: 0.25
   policy_kwargs: "dict(optimizer_class=RMSpropTFLike, optimizer_kwargs=dict(eps=1e-5))"

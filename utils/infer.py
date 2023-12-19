@@ -241,16 +241,16 @@ def infer(env_id: str,
 
     infer_logs: List[InferLog] = []
 
-    wandb_run = wandb.init(project="solen-rl-project-eval",
-                           name=args.run_name,
-                           config={'algo': args.algo,
-                                   'env_id': args.env_id,
-                                   'exp_id': args.exp_id,
-                                   'seed': args.seed,
-                                   'n_envs': args.n_envs,
-                                   'n_steps': args.n_steps,
-                                   'load_best': args.load_best,
-                                   'n_episodes': 0})
+    # wandb_run = wandb.init(project="solen-rl-project-eval",
+    #                        name=args.run_name,
+    #                        config={'algo': args.algo,
+    #                                'env_id': args.env_id,
+    #                                'exp_id': args.exp_id,
+    #                                'seed': args.seed,
+    #                                'n_envs': args.n_envs,
+    #                                'n_steps': args.n_steps,
+    #                                'load_best': args.load_best,
+    #                                'n_episodes': 0})
 
     for env_idx in range(args.n_envs):
         infer_logs.append(InferLog(env_idx=env_idx,
@@ -407,12 +407,12 @@ def infer(env_id: str,
                             print(f"Episode Score: {episode_log.episode_score:.2f}")
                             print(f"Episode Length: {episode_log.episode_length}")
                             
-                            wandb.log({"episode_lives": episode_log.episode_lives,
-                                       "episode_score": episode_log.episode_score,
-                                       "episode_length": episode_log.episode_length,
-                                       "episode_time": episode_log.episode_time,
-                                       "episode_frame_number": episode_log.episode_frame_number,
-                                       "run_frame_number": episode_log.run_frame_number})
+                            # wandb.log({"episode_lives": episode_log.episode_lives,
+                            #            "episode_score": episode_log.episode_score,
+                            #            "episode_length": episode_log.episode_length,
+                            #            "episode_time": episode_log.episode_time,
+                            #            "episode_frame_number": episode_log.episode_frame_number,
+                            #            "run_frame_number": episode_log.run_frame_number})
 
                             print(f"------------------------------")
                             print(f"\n")
@@ -461,10 +461,10 @@ def infer(env_id: str,
 
     n_episodes = sum([infer_log.n_episodes for infer_log in infer_logs])
     
-    wandb.config.update({"n_episodes": n_episodes})
+    # wandb.config.update({"n_episodes": n_episodes})
 
-    wandb_run.finish()
+    # wandb_run.finish()
 
-    wandb.finish()
+    # wandb.finish()
 
     return infer_logs

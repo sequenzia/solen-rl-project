@@ -1,4 +1,5 @@
 import importlib
+import pytz
 import os
 import sys
 
@@ -9,6 +10,7 @@ import rl_zoo3.import_envs
 
 import gymnasium as gym
 
+from datetime import datetime
 from copy import deepcopy
 
 from typing import Any, Dict, Optional, List, Union
@@ -25,6 +27,8 @@ from stable_baselines3.common.callbacks import tqdm
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack, VecNormalize
+
+import wandb
 
 from dataclasses import dataclass, field
 
@@ -140,10 +144,18 @@ class Args:
     env_kwargs: Dict[str, Any]
     debug_on: bool
 
+    run_name: str = field(init=False)
     env: EnvironmentName = field(init=False)
+    ts: str = field(init=False)
 
     def __post_init__(self) -> None:
+
+        ts = datetime.now(pytz.timezone('UTC')).astimezone(pytz.timezone('US/Eastern'))
+        
+        self.ts = ts.strftime("%Y-%m-%d-%H-%M-%S")
+
         self.env = EnvironmentName(self.env_id)
+        self.run_name = f"{self.algo}_{self.env_id}_{self.exp_id}_{self.ts}"
 
 
 @dataclass
@@ -229,6 +241,17 @@ def infer(env_id: str,
     args = Args(**locals())
 
     infer_logs: List[InferLog] = []
+
+    wandb_run = wandb.init(project="solen-rl-project-eval",
+                           name=args.run_name,
+                           config={'algo': args.algo,
+                                   'env_id': args.env_id,
+                                   'exp_id': args.exp_id,
+                                   'seed': args.seed,
+                                   'n_envs': args.n_envs,
+                                   'n_steps': args.n_steps,
+                                   'load_best': args.load_best,
+                                   'n_episodes': 0})
 
     for env_idx in range(args.n_envs):
         infer_logs.append(InferLog(env_idx=env_idx,
@@ -384,6 +407,14 @@ def infer(env_id: str,
 
                             print(f"Episode Score: {episode_log.episode_score:.2f}")
                             print(f"Episode Length: {episode_log.episode_length}")
+                            
+                            wandb.log({"episode_lives": episode_log.episode_lives,
+                                       "episode_score": episode_log.episode_score,
+                                       "episode_length": episode_log.episode_length,
+                                       "episode_time": episode_log.episode_time,
+                                       "episode_frame_number": episode_log.episode_frame_number,
+                                       "run_frame_number": episode_log.run_frame_number})
+
                             print(f"------------------------------")
                             print(f"\n")
 
@@ -428,5 +459,13 @@ def infer(env_id: str,
         print(f"Mean episode length: {np.mean(episode_lengths):.2f} +/- {np.std(episode_lengths):.2f}")
 
     env.close()
+
+    n_episodes = sum([infer_log.n_episodes for infer_log in infer_logs])
+    
+    wandb.config.update({"n_episodes": n_episodes})
+
+    wandb_run.finish()
+    
+    wandb.finish()
 
     return infer_logs

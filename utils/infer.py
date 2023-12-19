@@ -6,7 +6,6 @@ import sys
 import numpy as np
 import torch as th
 import yaml
-import rl_zoo3.import_envs
 
 import gymnasium as gym
 
@@ -465,7 +464,7 @@ def infer(env_id: str,
     wandb.config.update({"n_episodes": n_episodes})
 
     wandb_run.finish()
-    
+
     wandb.finish()
 
     return infer_logs
